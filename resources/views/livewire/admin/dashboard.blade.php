@@ -8,7 +8,6 @@
                 ['Online now', $this->stats['online_now'], 'bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300'],
                 ['Messages today', $this->stats['messages_today'], 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300'],
                 ['Deleted msgs', $this->stats['deleted_messages'], 'bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300'],
-                ['PIN requests', $this->stats['pending_pin_resets'], 'bg-cyan-100 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'],
             ];
         @endphp
         @foreach($cards as [$label, $value, $tone])

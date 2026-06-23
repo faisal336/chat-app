@@ -71,13 +71,6 @@
                 </span>
             </button>
 
-            <div class="text-center text-sm">
-                <a href="{{ route('pin.forgot') }}" wire:navigate
-                   class="text-brand-600 dark:text-brand-400 hover:underline">
-                    Forgot PIN?
-                </a>
-            </div>
-
             <div class="border-t border-slate-200 dark:border-white/10 pt-4 text-center text-sm">
                 New here?
                 <a href="{{ route('register') }}" wire:navigate

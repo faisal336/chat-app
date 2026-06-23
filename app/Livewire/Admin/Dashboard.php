@@ -4,7 +4,6 @@ namespace App\Livewire\Admin;
 
 use App\Models\AuditLog;
 use App\Models\Message;
-use App\Models\PinResetRequest;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Computed;
@@ -25,7 +24,6 @@ class Dashboard extends Component
             'online_now' => User::where('last_active_at', '>=', Carbon::now()->subMinutes(2))->count(),
             'messages_today' => Message::whereDate('created_at', today())->count(),
             'deleted_messages' => Message::onlyTrashed()->count(),
-            'pending_pin_resets' => PinResetRequest::where('status', PinResetRequest::PENDING)->count(),
         ];
     }
 
