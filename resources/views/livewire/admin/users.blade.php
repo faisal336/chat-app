@@ -50,7 +50,7 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">@{{ $user->username }}</td>
+                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">@ {{ $user->username }}</td>
                     <td class="px-4 py-3">
                         @php $role = $user->roles->first(); @endphp
                         <span class="inline-block px-2 py-0.5 rounded-full text-[10px] uppercase font-medium tracking-wide
