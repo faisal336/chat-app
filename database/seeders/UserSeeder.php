@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
                 'pin_hash' => Hash::make('000000'),
                 'status' => 'active',
                 'theme' => 'system',
-                'pin_must_change' => true,
+                'pin_must_change' => false,
             ]
         );
 

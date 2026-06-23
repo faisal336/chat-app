@@ -46,7 +46,7 @@ class Users extends Component
 
     public string $roleName = Role::USER;
 
-    public bool $forcePinChange = true;
+    public bool $forcePinChange = false;
 
     public function updatingSearch(): void
     {
@@ -85,7 +85,7 @@ class Users extends Component
         Gate::authorize('create', User::class);
         $this->reset(['editingId', 'username', 'name', 'email', 'newPin', 'roleName', 'forcePinChange']);
         $this->roleName = Role::USER;
-        $this->forcePinChange = true;
+        $this->forcePinChange = false;
         $this->modalOpen = true;
     }
 
@@ -173,7 +173,8 @@ class Users extends Component
 
             if ($this->newPin !== '') {
                 $user->setPin($this->newPin);
-                $user->pin_must_change = true;
+                // Respect the admin's checkbox — don't force a change unless they ticked it.
+                $user->pin_must_change = $this->forcePinChange;
             }
 
             $user->save();
@@ -226,7 +227,8 @@ class Users extends Component
 
         $tempPin = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $user->setPin($tempPin);
-        $user->pin_must_change = true;
+        // No auto-force — user can sign in with the temp PIN and keep using it.
+        // They can change it themselves any time via Settings -> Security.
         $user->save();
 
         $audit->log('user.pin_reset', $user, ['by_admin' => true]);

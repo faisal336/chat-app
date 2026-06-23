@@ -45,7 +45,7 @@
                        required minlength="3" maxlength="32"
                        pattern="[A-Za-z0-9_.-]+"
                        class="input @error('username') border-rose-500 focus:ring-rose-500/30 @enderror"
-                       placeholder="e.g. faisal">
+                       placeholder="pick a handle">
                 <p class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
                     Letters, numbers, dashes and dots. Visible to people who chat with you.
                 </p>
