@@ -15,6 +15,7 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
     Route::get('/register', \App\Livewire\Auth\Register::class)->name('register');
+    Route::get('/forgot-pin', \App\Livewire\Auth\ForgotPin::class)->name('pin.forgot');
 });
 
 // Authenticated routes (no "active" gate for pin change — locked users still need to update)
