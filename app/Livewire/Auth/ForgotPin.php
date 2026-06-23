@@ -70,7 +70,7 @@ class ForgotPin extends Component
             $user->save();
 
             try {
-                Mail::to($user->email)->queue(new PinResetIssuedEmail($user, $tempPin));
+                Mail::to($user->email)->send(new PinResetIssuedEmail($user, $tempPin));
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning(
                     'PinResetIssuedEmail dispatch failed in self-service flow: '.$e->getMessage()

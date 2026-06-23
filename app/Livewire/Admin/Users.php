@@ -158,7 +158,7 @@ class Users extends Component
             if ($user->email) {
                 try {
                     \Illuminate\Support\Facades\Mail::to($user->email)
-                        ->queue(new \App\Mail\WelcomeEmail($user, $this->newPin));
+                        ->send(new \App\Mail\WelcomeEmail($user, $this->newPin));
                 } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::warning('WelcomeEmail dispatch failed: '.$e->getMessage());
                 }
@@ -237,7 +237,7 @@ class Users extends Component
         if ($user->email) {
             try {
                 \Illuminate\Support\Facades\Mail::to($user->email)
-                    ->queue(new \App\Mail\PinResetIssuedEmail($user, $tempPin));
+                    ->send(new \App\Mail\PinResetIssuedEmail($user, $tempPin));
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('PinResetIssuedEmail dispatch failed: '.$e->getMessage());
             }

@@ -119,7 +119,7 @@ class Register extends Component
         if ($user->email) {
             try {
                 \Illuminate\Support\Facades\Mail::to($user->email)
-                    ->queue(new \App\Mail\WelcomeEmail($user));
+                    ->send(new \App\Mail\WelcomeEmail($user));
             } catch (\Throwable $e) {
                 // Don't block signup if mail config is wrong — log and continue.
                 \Illuminate\Support\Facades\Log::warning('WelcomeEmail dispatch failed: '.$e->getMessage());

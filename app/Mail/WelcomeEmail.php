@@ -3,16 +3,17 @@
 namespace App\Mail;
 
 use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class WelcomeEmail extends Mailable implements ShouldQueue
+// Sync, not queued — signup is interactive and welcome email arriving
+// 60 seconds later (after cron) feels broken. ~1 sec extra on the signup
+// request is a fair trade.
+class WelcomeEmail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     /**
      * @param  User    $user     The recipient.
