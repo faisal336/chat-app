@@ -43,4 +43,5 @@ Route::middleware(['auth', 'active', 'admin'])->prefix('admin')->name('admin.')-
     Route::get('/deleted-messages', \App\Livewire\Admin\DeletedMessages::class)->name('deleted-messages');
     Route::get('/audit-logs', \App\Livewire\Admin\AuditLogs::class)->name('audit-logs');
     Route::get('/pin-resets', \App\Livewire\Admin\PinResetQueue::class)->name('pin-resets');
+    Route::get('/mail-test', \App\Livewire\Admin\MailTest::class)->name('mail-test');
 });
