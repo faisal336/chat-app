@@ -6,7 +6,6 @@ use App\Actions\Chat\AcceptChatRequest;
 use App\Actions\Chat\BlockUser;
 use App\Actions\Chat\ClearChatHistory;
 use App\Actions\Chat\DeleteMessage;
-use App\Actions\Chat\ForwardMessage;
 use App\Actions\Chat\MarkConversationRead;
 use App\Actions\Chat\RejectChatRequest;
 use App\Actions\Chat\SendChatRequest;
@@ -58,10 +57,6 @@ class Index extends Component
     public bool $newChatOpen = false;
 
     public string $newChatSearch = '';
-
-    public ?int $forwardingMessageId = null;
-
-    public string $forwardSearch = '';
 
     public bool $searchOpen = false;
 
@@ -313,18 +308,23 @@ class Index extends Component
             ->all();
     }
 
+    /**
+     * Look up the candidate to start a chat with. EXACT username match only —
+     * users have to know the exact handle (privacy by obscurity). Partial
+     * matches return nothing.
+     */
     #[Computed]
     public function newChatCandidates(): Collection
     {
-        if (! $this->newChatOpen || strlen($this->newChatSearch) < 1) {
+        if (! $this->newChatOpen || trim($this->newChatSearch) === '') {
             return new Collection;
         }
 
         return User::query()
             ->active()
             ->where('id', '!=', auth()->id())
-            ->search($this->newChatSearch)
-            ->limit(15)
+            ->where('username', trim($this->newChatSearch))
+            ->limit(1)
             ->get(['id', 'username', 'name', 'avatar_path', 'last_active_at']);
     }
 
@@ -736,67 +736,6 @@ class Index extends Component
     public function cancelReply(): void
     {
         $this->replyToId = null;
-    }
-
-    public function openForward(int $id): void
-    {
-        $message = Message::find($id);
-
-        if (! $message || ! Gate::allows('view', $message) || $message->isDeleted()) {
-            return;
-        }
-
-        $this->forwardingMessageId = $message->id;
-        $this->forwardSearch = '';
-    }
-
-    public function closeForward(): void
-    {
-        $this->forwardingMessageId = null;
-        $this->forwardSearch = '';
-    }
-
-    public function forwardTo(int $userId, ForwardMessage $forwarder): void
-    {
-        if (! $this->forwardingMessageId) {
-            return;
-        }
-
-        $message = Message::find($this->forwardingMessageId);
-        $target = User::active()->find($userId);
-
-        if (! $message || ! $target || ! Gate::allows('view', $message)) {
-            $this->closeForward();
-
-            return;
-        }
-
-        try {
-            $forwarded = $forwarder->handle(auth()->user(), $message, $target);
-        } catch (\Throwable $e) {
-            $this->closeForward();
-
-            return;
-        }
-
-        $this->closeForward();
-        $this->selectConversation($forwarded->conversation_id);
-    }
-
-    #[Computed]
-    public function forwardCandidates(): \Illuminate\Database\Eloquent\Collection
-    {
-        if (! $this->forwardingMessageId) {
-            return new \Illuminate\Database\Eloquent\Collection;
-        }
-
-        return User::query()
-            ->active()
-            ->where('id', '!=', auth()->id())
-            ->when($this->forwardSearch !== '', fn ($q) => $q->search($this->forwardSearch))
-            ->orderBy('name')
-            ->limit(15)
-            ->get(['id', 'username', 'name', 'avatar_path']);
     }
 
     public function togglePinChat(): void

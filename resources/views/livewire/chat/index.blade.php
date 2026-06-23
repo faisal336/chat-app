@@ -580,9 +580,6 @@
                                                 <button type="button" wire:click="setReply({{ $message->id }})"
                                                         @click="menu = false"
                                                         class="w-full text-left px-3 py-1.5 text-xs rounded hover:bg-slate-100 dark:hover:bg-white/5">↩ Reply</button>
-                                                <button type="button" wire:click="openForward({{ $message->id }})"
-                                                        @click="menu = false"
-                                                        class="w-full text-left px-3 py-1.5 text-xs rounded hover:bg-slate-100 dark:hover:bg-white/5">➤ Forward</button>
                                                 <button type="button" wire:click="pinMessage({{ $message->id }})"
                                                         @click="menu = false"
                                                         class="w-full text-left px-3 py-1.5 text-xs rounded hover:bg-slate-100 dark:hover:bg-white/5">📌 Pin</button>
@@ -755,55 +752,6 @@
         </aside>
     @endif
 
-    {{-- ============================ FORWARD MODAL ============================ --}}
-    @if($forwardingMessageId)
-        <div class="fixed inset-0 z-50 flex items-center justify-center px-4"
-             x-data
-             x-on:keydown.escape.window="$wire.closeForward()">
-            <div class="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm"
-                 wire:click="closeForward"></div>
-            <div class="relative card w-full max-w-md p-0 overflow-hidden">
-                <div class="p-4 border-b border-slate-200 dark:border-white/10">
-                    <div class="flex items-center justify-between mb-3">
-                        <h3 class="font-semibold text-slate-900 dark:text-white">Forward to…</h3>
-                        <button type="button" wire:click="closeForward" class="btn btn-ghost p-1">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                    <div class="relative">
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input type="text" wire:model.live.debounce.250ms="forwardSearch"
-                               placeholder="Search by name or username…"
-                               class="input pl-9" autofocus>
-                    </div>
-                </div>
-                <div class="max-h-80 overflow-y-auto scrollbar-thin p-2">
-                    @forelse($this->forwardCandidates as $candidate)
-                        <button type="button" wire:click="forwardTo({{ $candidate->id }})"
-                                wire:key="fwd-{{ $candidate->id }}"
-                                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 text-left">
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-300 to-slate-400 dark:from-slate-700 dark:to-slate-800 text-white font-semibold text-sm flex items-center justify-center overflow-hidden">
-                                @if($candidate->avatarUrl())
-                                    <img src="{{ $candidate->avatarUrl() }}" alt="" class="w-full h-full object-cover">
-                                @else
-                                    {{ strtoupper(substr($candidate->name, 0, 1)) }}
-                                @endif
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ $candidate->name }}</p>
-                                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">@ {{ $candidate->username }}</p>
-                            </div>
-                        </button>
-                    @empty
-                        <div class="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
-                            No users found
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-    @endif
-
     {{-- ============================ NEW CHAT MODAL ============================ --}}
     @if($newChatOpen)
         <div class="fixed inset-0 z-50 flex items-center justify-center px-4"
@@ -863,7 +811,7 @@
                         <div class="relative">
                             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             <input type="text" wire:model.live.debounce.250ms="newChatSearch"
-                                   placeholder="Search by name or username…"
+                                   placeholder="Type the exact username…"
                                    class="input pl-9" autofocus>
                         </div>
                     </div>
@@ -891,7 +839,7 @@
                         @empty
                             <div class="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
                                 @if(strlen($newChatSearch) < 1)
-                                    Type a name or username to find someone
+                                    Type the exact username to find someone
                                 @else
                                     No users found
                                 @endif

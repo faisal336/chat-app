@@ -46,7 +46,20 @@ class ChatPermissionService
             return self::ALLOWED;
         }
 
-        // Either side already has an accepted request → conversation is open.
+        // If a private conversation between these two already exists, they're
+        // past the request gate — even if no chat_requests row records consent
+        // (e.g. an admin sent the first message, which bypasses requests).
+        // The recipient must be able to reply.
+        $hasConversation = Conversation::query()
+            ->between($actor->id, $target->id)
+            ->exists();
+
+        if ($hasConversation) {
+            return self::ALLOWED;
+        }
+
+        // Either side already has an accepted request → would have created a
+        // conversation, but check anyway for completeness.
         $accepted = ChatRequest::query()
             ->between($actor->id, $target->id)
             ->where('status', ChatRequest::STATUS_ACCEPTED)
