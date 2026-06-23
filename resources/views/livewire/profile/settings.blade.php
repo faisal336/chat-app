@@ -325,6 +325,19 @@
                             <span x-show="busy" x-cloak>Working…</span>
                         </button>
                     </div>
+
+                    <div class="flex items-center justify-between gap-3 p-4 rounded-lg border border-dashed border-slate-200 dark:border-white/10">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-slate-900 dark:text-white">Send a test notification</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                Fires a real push through the queue to verify the full pipeline. Arrives within ~60s (cron drains the queue once a minute).
+                            </p>
+                        </div>
+                        <button type="button" wire:click="sendTestPush"
+                                class="btn btn-secondary text-xs flex-shrink-0">
+                            Send test
+                        </button>
+                    </div>
                 </div>
 
                 <form wire:submit="saveNotifications" class="card p-6 space-y-5">

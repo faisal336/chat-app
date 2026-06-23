@@ -77,6 +77,15 @@
                     Forgot PIN?
                 </a>
             </div>
+
+            <div class="border-t border-slate-200 dark:border-white/10 pt-4 text-center text-sm">
+                New here?
+                <a href="{{ route('register') }}" wire:navigate
+                   class="text-brand-600 dark:text-brand-400 hover:underline font-medium">
+                    Create an account
+                </a>
+                <span class="text-slate-400 dark:text-slate-500"> — enjoy with new friends</span>
+            </div>
         </form>
     </div>
 

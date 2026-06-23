@@ -129,6 +129,24 @@ class Settings extends Component
         unset($this->blockedUsers);
     }
 
+    public function sendTestPush(): void
+    {
+        $user = auth()->user();
+
+        if ($user->pushSubscriptions()->count() === 0) {
+            session()->flash('status', 'No push subscription on this account yet. Click "Enable notifications" first, allow when the browser asks, then try again.');
+
+            return;
+        }
+
+        $user->notify(new \App\Notifications\TestPushNotification);
+
+        session()->flash(
+            'status',
+            'Test push queued. It should arrive within ~60 seconds (the cron drains the queue once a minute).'
+        );
+    }
+
     public function saveProfile(AuditService $audit): void
     {
         $user = auth()->user();

@@ -15,6 +15,7 @@ Route::get('/', function () {
 // Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
+    Route::get('/register', \App\Livewire\Auth\Register::class)->name('register');
     Route::get('/forgot-pin', ForgotPin::class)->name('pin.forgot');
 });
 
