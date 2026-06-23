@@ -9,7 +9,11 @@
     <title>{{ $title ?? config('app.name') }}</title>
 
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
