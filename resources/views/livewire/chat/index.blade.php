@@ -41,6 +41,54 @@
                         Settings
                     </a>
 
+                    {{-- PWA install entry. Only renders when the browser is installable
+                         (or iOS, where it triggers the Add to Home Screen instructions). --}}
+                    <div x-data="{
+                            canPrompt: window.chatappInstall?.canPrompt() ?? false,
+                            installed: window.chatappInstall?.isInstalled() ?? false,
+                            iosNeedsManual: window.chatappInstall?.isIOS() ?? false,
+                            showIosHelp: false,
+                            async install() {
+                                if (this.iosNeedsManual) { this.showIosHelp = true; return; }
+                                const outcome = await window.chatappInstall.prompt();
+                                if (outcome === 'accepted') this.canPrompt = false;
+                                menu = false;
+                            },
+                         }"
+                         x-on:chatapp:install-available.window="canPrompt = true"
+                         x-on:chatapp:installed.window="canPrompt = false; installed = true; showIosHelp = false"
+                         x-show="(canPrompt || iosNeedsManual) && !installed"
+                         x-cloak>
+                        <button type="button" @click="install"
+                                class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-brand-50 dark:hover:bg-brand-500/10 text-sm text-brand-700 dark:text-brand-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                            Install ChatApp
+                        </button>
+
+                        {{-- iOS instructions overlay --}}
+                        <div x-show="showIosHelp" x-cloak x-transition.opacity
+                             class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center px-4 pb-4">
+                            <div class="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm"
+                                 @click="showIosHelp = false"></div>
+                            <div class="relative card w-full max-w-sm p-6 text-center">
+                                <div class="w-12 h-12 mx-auto rounded-2xl bg-brand-100 dark:bg-brand-500/15 flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                </div>
+                                <h3 class="text-base font-semibold text-slate-900 dark:text-white mb-1">Install on iPhone / iPad</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Safari handles install through the share sheet:</p>
+                                <ol class="text-left text-sm space-y-2 mb-5 text-slate-700 dark:text-slate-200">
+                                    <li><span class="font-semibold">1.</span> Tap the
+                                        <svg class="inline w-4 h-4 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                        <span class="font-medium">Share</span> button at the bottom of Safari.
+                                    </li>
+                                    <li><span class="font-semibold">2.</span> Scroll down → tap <span class="font-medium">Add to Home Screen</span>.</li>
+                                    <li><span class="font-semibold">3.</span> Tap <span class="font-medium">Add</span> in the top right.</li>
+                                </ol>
+                                <button type="button" @click="showIosHelp = false; menu = false" class="btn btn-primary w-full">Got it</button>
+                            </div>
+                        </div>
+                    </div>
+
                     @if(auth()->user()->isAdmin())
                         <a href="{{ route('admin.dashboard') }}" wire:navigate
                            class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-sm">

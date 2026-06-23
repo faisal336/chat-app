@@ -22,6 +22,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)
 
 import './push.js';
 import './presence.js';
+import './install.js';
 
 // Service worker registration for PWA + push notifications.
 if ('serviceWorker' in navigator) {
