@@ -54,6 +54,15 @@ class PinResetQueue extends Component
         $audit->log('pin_reset.approved', $request, ['user_id' => $request->user_id]);
         $request->user->notify(new PinResetIssuedNotification);
 
+        if ($request->user->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($request->user->email)
+                    ->queue(new \App\Mail\PinResetIssuedEmail($request->user, $tempPin));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('PinResetIssuedEmail dispatch failed: '.$e->getMessage());
+            }
+        }
+
         $this->dispatch('temp-pin-issued', userId: $request->user_id, pin: $tempPin);
         unset($this->requests);
 

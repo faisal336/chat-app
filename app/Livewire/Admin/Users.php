@@ -153,6 +153,16 @@ class Users extends Component
             }
 
             $audit->log('user.created', $user, ['role' => $this->roleName]);
+
+            // Welcome email with the temp PIN — admin can skip out-of-band PIN delivery.
+            if ($user->email) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($user->email)
+                        ->queue(new \App\Mail\WelcomeEmail($user, $this->newPin));
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('WelcomeEmail dispatch failed: '.$e->getMessage());
+                }
+            }
         } else {
             $user->fill([
                 'username' => $this->username,
@@ -221,6 +231,15 @@ class Users extends Component
 
         $audit->log('user.pin_reset', $user, ['by_admin' => true]);
         unset($this->users);
+
+        if ($user->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)
+                    ->queue(new \App\Mail\PinResetIssuedEmail($user, $tempPin));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('PinResetIssuedEmail dispatch failed: '.$e->getMessage());
+            }
+        }
 
         $this->dispatch('temp-pin-issued', userId: $user->id, pin: $tempPin);
 

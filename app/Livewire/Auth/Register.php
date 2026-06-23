@@ -114,6 +114,18 @@ class Register extends Component
 
         $history->recordSuccess($user, request());
 
+        // Welcome email — only if they gave us one. Self-signup picks own PIN
+        // so no tempPin to send.
+        if ($user->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)
+                    ->queue(new \App\Mail\WelcomeEmail($user));
+            } catch (\Throwable $e) {
+                // Don't block signup if mail config is wrong — log and continue.
+                \Illuminate\Support\Facades\Log::warning('WelcomeEmail dispatch failed: '.$e->getMessage());
+            }
+        }
+
         $this->redirectIntended(default: route('chat.index'), navigate: true);
     }
 

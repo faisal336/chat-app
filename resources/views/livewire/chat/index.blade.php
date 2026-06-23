@@ -126,6 +126,27 @@
             </button>
         </div>
 
+        {{-- Add-email-for-recovery nag (only when user has no email on file) --}}
+        @if(! auth()->user()->email)
+            <div class="mx-4 mt-3 px-3 py-2.5 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+                <div class="flex items-start gap-2.5">
+                    <svg class="w-4 h-4 text-amber-700 dark:text-amber-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-medium text-amber-900 dark:text-amber-200">Add a recovery email</p>
+                        <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed mt-0.5">
+                            If you forget your PIN, the temporary PIN comes straight to your inbox.
+                        </p>
+                        <a href="{{ route('settings') }}" wire:navigate
+                           class="inline-block mt-1.5 text-[11px] font-semibold text-amber-900 dark:text-amber-200 underline decoration-amber-400 underline-offset-2 hover:decoration-2">
+                            Add email →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- Search --}}
         <div class="px-4 pt-3">
             <div class="relative">
