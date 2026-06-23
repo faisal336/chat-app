@@ -21,13 +21,15 @@
 /public/storage
 /storage/*.key
 /storage/pail
+# DO NOT add blanket /storage/framework/* or /storage/logs rules here.
+# Laravel ships per-directory .gitignore files in each (matching "* / !.gitignore")
+# that keep the folders tracked while ignoring their contents. A project-level
+# blanket rule would un-stage the marker file, causing the directories to never
+# appear on a fresh clone and Laravel to crash with:
+#   "InvalidArgumentException: Please provide a valid cache path."
+# Runtime user uploads (NOT framework data):
 /storage/app/public/avatars
 /storage/app/public/attachments
-/storage/framework/cache/data
-/storage/framework/sessions
-/storage/framework/testing
-/storage/framework/views
-/storage/logs
 /vendor
 _ide_helper.php
 Homestead.json
