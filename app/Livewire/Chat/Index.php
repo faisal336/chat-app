@@ -664,6 +664,12 @@ class Index extends Component
     {
         unset($this->thread, $this->conversations, $this->previewByConversation, $this->unreadCounts);
 
+        // The user is online (they're polling) → every incoming undelivered
+        // message they have, across ALL their conversations, can be marked
+        // delivered. Otherwise the sender's ✓ would only flip to ✓✓ once the
+        // recipient happened to open that exact chat. Bulk-update keeps it cheap.
+        $this->markAllIncomingDelivered();
+
         $conversation = $this->activeConversation;
 
         // Detect newly-arrived incoming messages on this conversation so the
@@ -702,6 +708,44 @@ class Index extends Component
         // Always ping the unread total so off-conversation messages still update the badge.
         $total = array_sum($this->unreadCounts);
         $this->dispatch('chatapp:unread-changed', count: $total);
+    }
+
+    /**
+     * Bulk-mark every incoming undelivered message addressed to the current
+     * user as delivered. Called on every poll; the user has the chat page
+     * open, that *is* delivery — they just haven't opened the specific chat.
+     */
+    private function markAllIncomingDelivered(): void
+    {
+        $userId = auth()->id();
+        $now = Carbon::now();
+
+        $ids = DB::table('messages')
+            ->join('conversation_participants as cp', function ($j) use ($userId) {
+                $j->on('cp.conversation_id', '=', 'messages.conversation_id')
+                  ->where('cp.user_id', $userId);
+            })
+            ->where('messages.sender_id', '!=', $userId)
+            ->whereNull('messages.delivered_at')
+            ->whereNull('messages.deleted_at')
+            ->pluck('messages.id');
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        DB::table('messages')
+            ->whereIn('id', $ids)
+            ->whereNull('delivered_at')
+            ->update(['delivered_at' => $now]);
+
+        \App\Models\MessageDelivery::insertOrIgnore(
+            $ids->map(fn ($id) => [
+                'message_id' => $id,
+                'user_id' => $userId,
+                'delivered_at' => $now,
+            ])->all()
+        );
     }
 
     public function loadOlder(): void

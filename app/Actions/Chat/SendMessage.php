@@ -88,6 +88,27 @@ class SendMessage
                 ->where('users.id', '!=', $sender->id)
                 ->get();
 
+            // If a recipient was active in the last 90 seconds (i.e. their browser
+            // is polling), mark the message delivered to them *immediately* so the
+            // sender sees ✓✓ gray right away instead of waiting up to 3s for the
+            // recipient's next poll to set delivered_at.
+            $now = Carbon::now();
+            $onlineRecipients = $recipients->filter(
+                fn (User $u) => $u->last_active_at && $u->last_active_at->diffInSeconds($now) < 90
+            );
+
+            if ($onlineRecipients->isNotEmpty()) {
+                $message->forceFill(['delivered_at' => $now])->save();
+
+                \App\Models\MessageDelivery::insertOrIgnore(
+                    $onlineRecipients->map(fn ($u) => [
+                        'message_id' => $message->id,
+                        'user_id' => $u->id,
+                        'delivered_at' => $now,
+                    ])->all()
+                );
+            }
+
             $loaded = $message->load(['sender', 'attachments']);
             Notification::send($recipients, new NewMessageNotification($loaded));
 
