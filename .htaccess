@@ -1,0 +1,109 @@
+# ============================================================================
+# Force PHP 8.3 for this app even when the account default is 8.2.
+# Hostinger runs CloudLinux alt-php under LiteSpeed; the per-folder handler
+# below overrides the user-account PHP version for THIS directory only,
+# so other apps under the same hosting plan keep their own version.
+#
+# If the subdomain returns 503 right after deploying this, comment out the
+# active handler and uncomment ONE of the alternates below — only one at a
+# time. Hostinger occasionally rotates the handler name.
+# ============================================================================
+<IfModule lsapi_module>
+    AddHandler application/x-httpd-alt-php83___lsphp .php .phtml
+</IfModule>
+# AddHandler application/x-httpd-php83 .php
+# AddType application/x-httpd-php83 .php
+
+# ============================================================================
+# Lock down framework directories. The doc-root is the *project* root, so a
+# direct request like /storage/framework/cache/.../x.php would otherwise hit
+# real files containing config & cached blade output. These rules return 404
+# before the rewrite engine even runs.
+# ============================================================================
+RedirectMatch 404 "/\.(?!well-known)"
+RedirectMatch 404 "/(?:app|bootstrap|config|database|resources|routes|tests|vendor)/"
+RedirectMatch 404 "/(?:composer\.(?:json|lock)|package\.json|package-lock\.json|vite\.config\.js|phpunit\.xml|artisan|README\.md)$"
+# /storage at the project root must NEVER be served (framework cache/logs/sessions).
+# User uploads live under /public/storage (symlink to storage/app/public) — those
+# are still reachable through the public-folder rewrite below.
+RedirectMatch 404 "^/storage/(?!app/public/)"
+
+# ============================================================================
+# Front controller: route every request through /public/index.php
+# ============================================================================
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Pass through Authorization header (Livewire / Sanctum / API tokens rely on it)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # Strip trailing slashes unless they resolve to an actual directory
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Map / -> /public/ (Laravel's front controller lives there). Skip if the
+    # URL is already prefixed or resolves to a real file at the project root
+    # (very rare — we 404'd the dangerous ones above).
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# ============================================================================
+# Security headers
+# ============================================================================
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), camera=(), microphone=(), payment=()"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+</IfModule>
+
+# ============================================================================
+# Cache policy
+#   - Vite assets are content-hashed → cache 1 year, immutable
+#   - Service worker must revalidate every request or the PWA gets stuck
+#   - manifest.webmanifest: short cache so icon/theme tweaks propagate
+# ============================================================================
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 hour"
+</IfModule>
+
+<IfModule mod_headers.c>
+    <FilesMatch "build/.*\.(css|js|woff2?|svg|png|jpe?g|webp|avif|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    <FilesMatch "^sw\.js$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+    </FilesMatch>
+
+    <FilesMatch "manifest\.webmanifest$">
+        Header set Cache-Control "public, max-age=300"
+    </FilesMatch>
+</IfModule>
+
+# ============================================================================
+# Belt and braces: never serve .env even if everything else fails
+# ============================================================================
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
+
+# mod_php is a no-op on Hostinger (LSAPI) but harmless to leave in
+<IfModule mod_php.c>
+    php_value memory_limit 512M
+</IfModule>
